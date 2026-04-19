@@ -1,29 +1,42 @@
 {% extends "base.html" %}
 {% block title %}Monat {{ month_key }} - Zeiterfassung{% endblock %}
 {% block content %}
-<section class="bg-white rounded-2xl shadow p-4">
-    <div class="flex items-center justify-between mb-3">
-        <h2 class="font-semibold">Monat {{ "%02d"|format(month) }}/{{ year }}</h2>
+<section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+    <div class="flex items-center justify-between mb-4">
+        <div>
+            <p class="text-xs font-medium uppercase tracking-widest text-slate-400">Übersicht</p>
+            <h2 class="font-bold text-lg text-slate-800">{{ "%02d"|format(month) }} / {{ year }}</h2>
+        </div>
         <form method="post" action="/export/{{ month_key }}">
-            <button class="bg-blue-900 text-white rounded-lg px-3 py-1 text-sm hover:bg-blue-800">
+            <button class="bg-blue-900 text-white rounded-xl px-4 py-2 text-sm font-medium hover:bg-blue-800 active:scale-[0.99] transition-all shadow-sm">
                 PDF exportieren
             </button>
         </form>
     </div>
 
     {% if entries %}
-    <table class="w-full text-sm">
-        <thead class="text-slate-500 text-left">
-            <tr><th class="py-1">Tag</th><th>Start</th><th>Ende</th><th>Notiz</th><th></th></tr>
-        </thead>
-        <tbody class="divide-y">
-            {% for e in entries %}
-            {% include "partials/month_row.html" %}
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="overflow-hidden rounded-xl border border-slate-100">
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    <th class="px-3 py-2.5 text-left">Tag</th>
+                    <th class="px-3 py-2.5 text-left">Start</th>
+                    <th class="px-3 py-2.5 text-left">Ende</th>
+                    <th class="px-3 py-2.5 text-left">Notiz</th>
+                    <th class="px-3 py-2.5"></th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for e in entries %}
+                {% include "partials/month_row.html" %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
     {% else %}
-    <p class="text-slate-500 text-sm">Keine Einträge in diesem Monat.</p>
+    <div class="text-center py-10 text-slate-400">
+        <p class="text-sm">Keine Einträge in diesem Monat.</p>
+    </div>
     {% endif %}
 </section>
 {% endblock %}

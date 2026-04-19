@@ -91,6 +91,7 @@ def update_entry(
     start: Annotated[time, Form()],
     end: Annotated[time | None, Form()] = None,
     note: Annotated[str | None, Form()] = None,
+    view: Annotated[str | None, Form()] = None,
 ) -> HTMLResponse:
     entry = session.get(TimeEntry, entry_id)
     if entry is None:
@@ -103,6 +104,8 @@ def update_entry(
     entry.note = note
     session.add(entry)
     session.commit()
+    if view == "today":
+        return _render_today_card(request, session)
     return templates.TemplateResponse(
         request,
         "partials/month_row.html",
@@ -113,11 +116,15 @@ def update_entry(
 @router.post("/entries/{entry_id}/delete", response_class=HTMLResponse)
 def delete_entry(
     entry_id: int,
+    request: Request,
     session: Annotated[Session, Depends(get_session)],
+    view: Annotated[str | None, Form()] = None,
 ) -> HTMLResponse:
     entry = session.get(TimeEntry, entry_id)
     if entry is None:
         raise HTTPException(status_code=404)
     session.delete(entry)
     session.commit()
+    if view == "today":
+        return _render_today_card(request, session)
     return HTMLResponse("")

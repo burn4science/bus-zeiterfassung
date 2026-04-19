@@ -6,19 +6,22 @@
     <title>Anmelden - Zeiterfassung</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-50 min-h-screen flex items-center justify-center">
-<form method="post" action="/login" class="bg-white rounded-2xl shadow p-6 w-80 space-y-4">
-    <h1 class="text-xl font-semibold text-center">Zeiterfassung</h1>
+<body class="bg-slate-100 min-h-screen flex items-center justify-center px-4">
+<form method="post" action="/login" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 w-full max-w-xs space-y-5">
+    <div class="text-center">
+        <h1 class="text-xl font-bold text-slate-800">Zeiterfassung</h1>
+        <p class="text-xs text-slate-400 mt-1 uppercase tracking-widest font-medium">Anmelden</p>
+    </div>
     {% if error %}
-    <p class="text-sm text-red-600 text-center">{{ error }}</p>
+    <p class="text-sm text-red-600 text-center bg-red-50 rounded-lg py-2 px-3">{{ error }}</p>
     {% endif %}
     <label class="block">
-        <span class="text-sm text-slate-600">PIN</span>
+        <span class="text-sm font-medium text-slate-700">PIN</span>
         <input name="pin" type="password" inputmode="numeric" autocomplete="current-password"
-               class="mt-1 w-full border rounded-lg px-3 py-2 text-lg tracking-widest text-center"
+               class="mt-1 w-full border border-slate-200 rounded-xl px-3 py-3 text-2xl tracking-widest text-center font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
                required autofocus>
     </label>
-    <button class="w-full bg-blue-900 text-white rounded-lg py-2 font-medium hover:bg-blue-800">
+    <button class="w-full bg-blue-900 text-white rounded-xl py-2.5 font-semibold hover:bg-blue-800 active:scale-[0.99] transition-all">
         Anmelden
     </button>
 </form>
