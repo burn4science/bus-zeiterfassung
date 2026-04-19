@@ -2,10 +2,37 @@
 {% block title %}Monat {{ month_key }} - Zeiterfassung{% endblock %}
 {% block content %}
 <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
-    <div class="flex items-center justify-between mb-4">
-        <div>
-            <p class="text-xs font-medium uppercase tracking-widest text-slate-400">Übersicht</p>
-            <h2 class="font-bold text-lg text-slate-800">{{ "%02d"|format(month) }} / {{ year }}</h2>
+    <div class="flex items-center justify-between mb-4 gap-3">
+        <div class="flex items-center gap-1">
+            <a href="/month?m={{ prev_key }}"
+               class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+            </a>
+            <h2 class="font-bold text-lg text-slate-800 w-28 text-center">{{ "%02d"|format(month) }} / {{ year }}</h2>
+            {% if is_future %}
+            <span class="p-1.5 text-slate-200 cursor-default">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+                </svg>
+            </span>
+            {% else %}
+            <a href="/month?m={{ next_key }}"
+               class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+                </svg>
+            </a>
+            {% endif %}
+            {% if not is_current_month %}
+            <a href="/month" title="Aktueller Monat"
+               class="ml-1 p-1.5 rounded-lg text-blue-500 hover:text-blue-700 hover:bg-blue-50 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
+                </svg>
+            </a>
+            {% endif %}
         </div>
         <form method="post" action="/export/{{ month_key }}">
             <button class="bg-blue-900 text-white rounded-xl px-4 py-2 text-sm font-medium hover:bg-blue-800 active:scale-[0.99] transition-all shadow-sm">

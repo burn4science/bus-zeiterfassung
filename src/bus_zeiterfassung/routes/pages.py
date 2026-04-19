@@ -1,13 +1,14 @@
-from datetime import date
+from datetime import date, timedelta
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Form, Request
+from fastapi import APIRouter, Depends, Form, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlmodel import Session, select
 
 from bus_zeiterfassung.auth import SESSION_KEY, require_login, verify_pin
 from bus_zeiterfassung.db import get_session
 from bus_zeiterfassung.models import TimeEntry
+from bus_zeiterfassung.routes.entries import _next_nav_day
 from bus_zeiterfassung.templating import templates
 from bus_zeiterfassung.timeutil import today_local
 
@@ -42,15 +43,27 @@ def logout(request: Request) -> RedirectResponse:
 def today_page(
     request: Request,
     session: Annotated[Session, Depends(get_session)],
+    day_str: Annotated[str | None, Query(alias="d")] = None,
 ) -> HTMLResponse:
     today = today_local()
-    stmt = select(TimeEntry).where(TimeEntry.day == today).order_by(TimeEntry.start)  # type: ignore[arg-type]
+    selected_day = date.fromisoformat(day_str) if day_str else today
+    stmt = select(TimeEntry).where(TimeEntry.day == selected_day).order_by(TimeEntry.start)  # type: ignore[arg-type]
     entries = list(session.exec(stmt))
     open_entry = next((e for e in entries if e.start is not None and e.end is None), None)
+    next_day, has_next = _next_nav_day(session, selected_day, today)
     return templates.TemplateResponse(
         request,
         "today.html",
-        {"today": today, "entries": entries, "open_entry": open_entry},
+        {
+            "today": today,
+            "selected_day": selected_day,
+            "is_today": selected_day == today,
+            "prev_day": selected_day - timedelta(days=1),
+            "next_day": next_day,
+            "has_next": has_next,
+            "entries": entries,
+            "open_entry": open_entry,
+        },
     )
 
 
@@ -58,24 +71,33 @@ def today_page(
 def month_page(
     request: Request,
     session: Annotated[Session, Depends(get_session)],
-    m: str | None = None,
+    month_str: Annotated[str | None, Query(alias="m")] = None,
 ) -> HTMLResponse:
     today = today_local()
-    if m:
-        y, mo = (int(x) for x in m.split("-", 1))
+    if month_str:
+        year, month = (int(part) for part in month_str.split("-", 1))
     else:
-        y, mo = today.year, today.month
+        year, month = today.year, today.month
 
-    start = date(y, mo, 1)
-    end = date(y + (mo == 12), (mo % 12) + 1, 1)
+    start = date(year, month, 1)
+    end = date(year + (month == 12), (month % 12) + 1, 1)
     stmt = (
         select(TimeEntry)
         .where(TimeEntry.day >= start, TimeEntry.day < end)
         .order_by(TimeEntry.day, TimeEntry.start)  # type: ignore[arg-type]
     )
     entries = list(session.exec(stmt))
+    prev_month, prev_year = (12, year - 1) if month == 1 else (month - 1, year)
+    next_month, next_year = (1, year + 1) if month == 12 else (month + 1, year)
     return templates.TemplateResponse(
         request,
         "month.html",
-        {"year": y, "month": mo, "entries": entries, "month_key": f"{y}-{mo:02d}"},
+        {
+            "year": year, "month": month, "entries": entries,
+            "month_key": f"{year}-{month:02d}",
+            "prev_key": f"{prev_year}-{prev_month:02d}",
+            "next_key": f"{next_year}-{next_month:02d}",
+            "is_future": date(next_year, next_month, 1) > today,
+            "is_current_month": year == today.year and month == today.month,
+        },
     )

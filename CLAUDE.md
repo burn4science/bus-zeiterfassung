@@ -40,13 +40,24 @@ docker compose run --rm app python -m bus_zeiterfassung.auth hash <pin>
 | `db.py` | Async SQLite engine, session dependency |
 | `auth.py` | Argon2 PIN verify, session cookie, `require_login` FastAPI dependency |
 | `timeutil.py` | Timezone-aware datetime helpers (default: Europe/Berlin) |
+| `templating.py` | Jinja2Templates instance + custom filters (`weekday_de` for German day names) |
 | `routes/pages.py` | `GET /`, `/month`, `/login` + `POST /login` |
-| `routes/entries.py` | `POST /start`, `/stop`, `/entries` CRUD |
+| `routes/entries.py` | `POST /start`, `/stop`, `/entries` CRUD + shared helpers |
 | `routes/export.py` | `POST /export/{month_key}` → xlsx + pdf |
 | `services/excel.py` | `fill_template(entries, year, month)` — fills xlsx template cells |
 | `services/pdf.py` | `xlsx_to_pdf(path)` — shells out to `soffice` |
 
 **Core data flow**: User clocks in (`/start` → open `TimeEntry`), clocks out (`/stop` → sets `end`). At month end, `/export/{YYYY-MM}` groups entries by day (max 4 sessions/day), fills the Excel template (see `docs/template-mapping.md` for exact cell layout), and converts to PDF.
+
+**URL params**: `GET /?d=YYYY-MM-DD` — day view for a specific date (defaults to today). `GET /month?m=YYYY-MM` — month view (defaults to current month). Short aliases kept in URL via `Query(alias=...)` so Python variables stay descriptive.
+
+## Non-obvious Patterns
+
+**Dual-context HTMX endpoints**: `POST /entries/{id}/update` and `POST /entries/{id}/delete` serve both the "Erfassen" (day) and "Monat" (month) views. They detect which view to re-render via a hidden `view` form field (`"today"` or absent). When `view=today`, they return `partials/today_card.html`; otherwise a single `partials/month_row.html` row. A `selected_day` hidden field threads the currently-viewed date back through edit/delete so the card stays on the same day after mutation.
+
+**`_next_nav_day` helper** (`routes/entries.py`): computes the next navigation target for the day view's `>` arrow. Past days go day-by-day; today and future days jump to the nearest date that has an entry (or disable the arrow if none exists). Imported by `routes/pages.py` — don't duplicate this logic.
+
+**`partials/today_card.html`** is both a full-page include (via `today.html`) and a direct HTMX swap target (`#today-card`). All mutation endpoints (`/start`, `/stop`, `/entries`, update, delete with `view=today`) return this partial directly.
 
 ## Testing Notes
 

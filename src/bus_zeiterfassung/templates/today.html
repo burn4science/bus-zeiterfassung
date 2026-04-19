@@ -10,7 +10,7 @@
     <form hx-post="/entries" hx-target="#today-card" hx-swap="innerHTML" class="grid grid-cols-2 gap-3">
         <label class="col-span-2 text-sm font-medium text-slate-700">
             Datum
-            <input type="date" name="day" value="{{ today.isoformat() }}" required
+            <input type="date" name="day" value="{{ selected_day.isoformat() }}" required
                    class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
         </label>
         <label class="text-sm font-medium text-slate-700">

@@ -36,6 +36,15 @@ uv sync && uv run pytest
 PDF-Tests werden automatisch übersprungen, wenn `soffice` / `libreoffice`
 nicht installiert ist.
 
+## Funktionsüberblick
+
+| Ansicht | URL | Beschreibung |
+|---|---|---|
+| Erfassen | `/?d=YYYY-MM-DD` | Tagesansicht mit Start/Stopp, manuellem Eintrag, Inline-Bearbeitung. Navigiert tageweise durch die Vergangenheit; springt in der Zukunft nur zu Tagen mit Einträgen. |
+| Monat | `/month?m=YYYY-MM` | Monatsübersicht mit Inline-Bearbeitung, Vor-/Zurück-Navigation und PDF-Export. |
+
+Einträge können in beiden Ansichten inline bearbeitet und gelöscht werden (Stift- und Papierkorb-Icon). Neue Jinja2-Filter: `weekday_de` für deutsche Wochentagsnamen (in `templating.py`).
+
 ## Deployment (Proxmox LXC)
 
 ```bash

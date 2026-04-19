@@ -1,4 +1,4 @@
-from datetime import date, time
+from datetime import date, time, timedelta
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
@@ -23,19 +23,48 @@ def _open_entry_for_today(session: Session) -> TimeEntry | None:
     return session.exec(stmt).first()
 
 
+def _next_nav_day(session: Session, viewing_day: date, today: date) -> tuple[date, bool]:
+    """Return (next_nav_day, has_next). Past days go day-by-day; today/future jump to the nearest entry."""
+    if viewing_day < today:
+        return viewing_day + timedelta(days=1), True
+    next_entry = session.exec(
+        select(TimeEntry)
+        .where(TimeEntry.day > viewing_day)  # type: ignore[arg-type]
+        .order_by(TimeEntry.day)  # type: ignore[arg-type]
+        .limit(1)
+    ).first()
+    if next_entry:
+        return next_entry.day, True
+    return viewing_day + timedelta(days=1), False
+
+
 def _render_today_card(
     request: Request,
     session: Session,
+    selected_day: date | None = None,
     flash: str | None = None,
 ) -> HTMLResponse:
     today = today_local()
-    stmt = select(TimeEntry).where(TimeEntry.day == today).order_by(TimeEntry.start)  # type: ignore[arg-type]
-    entries = list(session.exec(stmt))
+    viewing_day = selected_day or today
+    entries = list(session.exec(
+        select(TimeEntry).where(TimeEntry.day == viewing_day).order_by(TimeEntry.start)  # type: ignore[arg-type]
+    ))
     open_entry = next((e for e in entries if e.start is not None and e.end is None), None)
+    next_day, has_next = _next_nav_day(session, viewing_day, today)
     return templates.TemplateResponse(
         request,
         "partials/today_card.html",
-        {"today": today, "entries": entries, "open_entry": open_entry, "flash": flash},
+        {
+            "today": today,
+            "selected_day": viewing_day,
+            "is_today": viewing_day == today,
+            "prev_day": viewing_day - timedelta(days=1),
+            "next_day": next_day,
+            "has_next": has_next,
+            "entries": entries,
+            "open_entry": open_entry,
+            "flash": flash,
+        },
     )
 
 
@@ -79,7 +108,7 @@ def create_entry(
     entry = TimeEntry(day=day, start=start, end=end, note=note)
     session.add(entry)
     session.commit()
-    return _render_today_card(request, session, flash=f"Eintrag für {day.isoformat()} gespeichert")
+    return _render_today_card(request, session, selected_day=day, flash=f"Eintrag für {day.strftime('%d.%m.%Y')} gespeichert")
 
 
 @router.post("/entries/{entry_id}/update", response_class=HTMLResponse)
@@ -92,6 +121,7 @@ def update_entry(
     end: Annotated[time | None, Form()] = None,
     note: Annotated[str | None, Form()] = None,
     view: Annotated[str | None, Form()] = None,
+    selected_day_str: Annotated[str | None, Form(alias="selected_day")] = None,
 ) -> HTMLResponse:
     entry = session.get(TimeEntry, entry_id)
     if entry is None:
@@ -105,12 +135,9 @@ def update_entry(
     session.add(entry)
     session.commit()
     if view == "today":
-        return _render_today_card(request, session)
-    return templates.TemplateResponse(
-        request,
-        "partials/month_row.html",
-        {"e": entry},
-    )
+        viewing_day = date.fromisoformat(selected_day_str) if selected_day_str else None
+        return _render_today_card(request, session, selected_day=viewing_day)
+    return templates.TemplateResponse(request, "partials/month_row.html", {"e": entry})
 
 
 @router.post("/entries/{entry_id}/delete", response_class=HTMLResponse)
@@ -119,6 +146,7 @@ def delete_entry(
     request: Request,
     session: Annotated[Session, Depends(get_session)],
     view: Annotated[str | None, Form()] = None,
+    selected_day_str: Annotated[str | None, Form(alias="selected_day")] = None,
 ) -> HTMLResponse:
     entry = session.get(TimeEntry, entry_id)
     if entry is None:
@@ -126,5 +154,6 @@ def delete_entry(
     session.delete(entry)
     session.commit()
     if view == "today":
-        return _render_today_card(request, session)
+        viewing_day = date.fromisoformat(selected_day_str) if selected_day_str else None
+        return _render_today_card(request, session, selected_day=viewing_day)
     return HTMLResponse("")
