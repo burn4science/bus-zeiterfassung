@@ -1,0 +1,12 @@
+name: bus-zeiterfassung
+
+services:
+  app:
+    build: .
+    container_name: bus-zeiterfassung
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data

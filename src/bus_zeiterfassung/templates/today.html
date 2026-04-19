@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Heute - Zeiterfassung{% endblock %}
+{% block content %}
+<div id="today-card">
+    {% include "partials/today_card.html" %}
+</div>
+
+<section class="mt-8 bg-white rounded-2xl shadow p-4">
+    <h2 class="font-semibold mb-3">Manueller Eintrag</h2>
+    <form hx-post="/entries" hx-target="#today-card" hx-swap="innerHTML" class="grid grid-cols-2 gap-3">
+        <label class="col-span-2 text-sm">
+            Datum
+            <input type="date" name="day" value="{{ today.isoformat() }}" required class="mt-1 w-full border rounded px-2 py-1">
+        </label>
+        <label class="text-sm">
+            Start
+            <input type="time" name="start" required class="mt-1 w-full border rounded px-2 py-1">
+        </label>
+        <label class="text-sm">
+            Ende
+            <input type="time" name="end" class="mt-1 w-full border rounded px-2 py-1">
+        </label>
+        <label class="col-span-2 text-sm">
+            Bemerkung (optional)
+            <input type="text" name="note" class="mt-1 w-full border rounded px-2 py-1">
+        </label>
+        <button class="col-span-2 bg-slate-800 text-white rounded-lg py-2 mt-2 hover:bg-slate-700">
+            Speichern
+        </button>
+    </form>
+</section>
+{% endblock %}

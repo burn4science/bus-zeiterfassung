@@ -1,0 +1,35 @@
+<tr id="row-{{ e.id }}" x-data="{ edit: false }">
+    <template x-if="!edit">
+        <td class="py-1" colspan="5">
+            <div class="flex items-center justify-between gap-2">
+                <span>{{ e.day.strftime('%d.%m.') }}</span>
+                <span>{{ e.start.strftime('%H:%M') if e.start else '–' }}</span>
+                <span>{{ e.end.strftime('%H:%M') if e.end else '…' }}</span>
+                <span class="text-slate-500 flex-1 truncate">{{ e.note or '' }}</span>
+                <div class="flex gap-1">
+                    <button @click="edit = true" class="text-xs px-2 py-1 rounded bg-slate-200 hover:bg-slate-300">Bearb.</button>
+                    <button hx-post="/entries/{{ e.id }}/delete"
+                            hx-target="#row-{{ e.id }}" hx-swap="outerHTML"
+                            hx-confirm="Eintrag wirklich löschen?"
+                            class="text-xs px-2 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200">Löschen</button>
+                </div>
+            </div>
+        </td>
+    </template>
+    <template x-if="edit">
+        <td colspan="5" class="py-2">
+            <form hx-post="/entries/{{ e.id }}/update"
+                  hx-target="#row-{{ e.id }}" hx-swap="outerHTML"
+                  class="grid grid-cols-5 gap-2 text-sm">
+                <input type="date" name="day" value="{{ e.day.isoformat() }}" required class="border rounded px-1 py-0.5">
+                <input type="time" name="start" value="{{ e.start.strftime('%H:%M') if e.start else '' }}" required class="border rounded px-1 py-0.5">
+                <input type="time" name="end" value="{{ e.end.strftime('%H:%M') if e.end else '' }}" class="border rounded px-1 py-0.5">
+                <input type="text" name="note" value="{{ e.note or '' }}" class="border rounded px-1 py-0.5 col-span-1">
+                <div class="flex gap-1">
+                    <button class="text-xs px-2 py-1 rounded bg-blue-700 text-white">OK</button>
+                    <button type="button" @click="edit = false" class="text-xs px-2 py-1 rounded bg-slate-200">Abbr.</button>
+                </div>
+            </form>
+        </td>
+    </template>
+</tr>

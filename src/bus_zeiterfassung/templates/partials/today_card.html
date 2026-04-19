@@ -1,0 +1,36 @@
+<section class="bg-white rounded-2xl shadow p-6 text-center">
+    <p class="text-sm text-slate-500">{{ today.strftime('%A, %d.%m.%Y') }}</p>
+
+    {% if open_entry %}
+    <p class="mt-2 text-slate-600">Läuft seit <strong>{{ open_entry.start.strftime('%H:%M') }}</strong></p>
+    <div x-data="{ start: '{{ open_entry.start.isoformat() }}', now: '' }"
+         x-init="setInterval(() => { now = new Date().toLocaleTimeString('de-DE'); }, 1000)"
+         class="mt-1 text-xs text-slate-400">jetzt: <span x-text="now"></span></div>
+    <form hx-post="/stop" hx-target="#today-card" hx-swap="innerHTML" class="mt-4">
+        <button class="w-full bg-red-600 text-white text-xl font-semibold rounded-2xl py-6 hover:bg-red-500 active:scale-[0.99]">
+            Stopp
+        </button>
+    </form>
+    {% else %}
+    <form hx-post="/start" hx-target="#today-card" hx-swap="innerHTML" class="mt-4">
+        <button class="w-full bg-green-600 text-white text-xl font-semibold rounded-2xl py-6 hover:bg-green-500 active:scale-[0.99]">
+            Start
+        </button>
+    </form>
+    {% endif %}
+
+    {% if flash %}
+    <p class="mt-4 text-sm text-green-700">{{ flash }}</p>
+    {% endif %}
+
+    {% if entries %}
+    <ul class="mt-5 text-left divide-y">
+        {% for e in entries %}
+        <li class="py-2 flex justify-between text-sm">
+            <span>{{ e.start.strftime('%H:%M') if e.start else '–' }} – {{ e.end.strftime('%H:%M') if e.end else '…' }}</span>
+            {% if e.note %}<span class="text-slate-500">{{ e.note }}</span>{% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</section>

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#1e3a8a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Zeiterfassung">
+    <link rel="manifest" href="{{ url_for('static', path='manifest.webmanifest') }}">
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', path='icons/icon.svg') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', path='icons/icon.svg') }}">
+    <title>{% block title %}Zeiterfassung{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.9/dist/cdn.min.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen">
+<header class="bg-blue-900 text-white shadow">
+    <div class="max-w-xl mx-auto px-4 py-3 flex items-center justify-between">
+        <a href="/" class="font-semibold text-lg">Zeiterfassung</a>
+        <nav class="flex gap-4 text-sm">
+            <a href="/" class="hover:underline">Heute</a>
+            <a href="/month" class="hover:underline">Monat</a>
+            <form method="post" action="/logout" class="inline">
+                <button class="hover:underline">Logout</button>
+            </form>
+        </nav>
+    </div>
+</header>
+<main class="max-w-xl mx-auto px-4 py-6">
+    {% block content %}{% endblock %}
+</main>
+</body>
+</html>
