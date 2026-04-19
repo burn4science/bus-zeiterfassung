@@ -127,7 +127,7 @@ def test_fill_template_ignores_entries_without_start(tmp_export_dir: Path) -> No
 def test_fill_template_writes_user_name(tmp_export_dir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     from bus_zeiterfassung import config
 
-    monkeypatch.setattr(config.settings, "user_name", "Max Mustermann")
+    monkeypatch.setattr(config.settings, "employee_name", "Max Mustermann")
     out = fill_template([], 2026, 4)
     wb = load_workbook(out)
     ws = wb.active

@@ -53,7 +53,7 @@ def fill_template(entries: Sequence[TimeEntry], year: int, month: int) -> Path:
     ws["G1"] = "Jahr:"
     ws["H1"] = year
     ws["A3"] = "Name:"
-    ws["B3"] = settings.user_name
+    ws["B3"] = settings.employee_name
 
     by_day: dict[int, list[TimeEntry]] = defaultdict(list)
     for e in entries:
