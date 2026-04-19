@@ -56,4 +56,4 @@ docker compose run --rm app python -m bus_zeiterfassung.auth hash <pin>
 
 ## Environment
 
-Copy `.env.example` to `.env`. Required: `PIN_HASH`, `SECRET_KEY` (≥32 chars). The Excel template (`data/Dienstzeitblatt_template.xlsx`) is not in the repo and must be provided separately — it is volume-mounted at `/app/data`.
+Copy `.env.example` to `.env`. Required: `PIN_HASH`, `SECRET_KEY` (≥32 chars). The Excel template (`assets/Dienstzeitblatt_template.xlsx`) is not in the repo and must be provided separately — it is volume-mounted at `/app/data`.

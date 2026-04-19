@@ -1,6 +1,6 @@
 # Template Mapping — `Dienstzeitblatt_template.xlsx`
 
-Source: `data/Dienstzeitblatt_template.xlsx` (inspected 2026-04-19)
+Source: `assets/Dienstzeitblatt_template.xlsx` (inspected 2026-04-19)
 
 ## Sheet
 

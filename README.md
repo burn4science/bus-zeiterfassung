@@ -20,7 +20,7 @@ docker compose logs -f         # Logs verfolgen
 docker compose down            # Stoppen
 ```
 
-Die Vorlage muss unter `data/Dienstzeitblatt_template.xlsx` liegen.
+Die Vorlage muss unter `assets/Dienstzeitblatt_template.xlsx` liegen.
 Zellen-Mapping: siehe [docs/template-mapping.md](docs/template-mapping.md).
 
 ## Tests
