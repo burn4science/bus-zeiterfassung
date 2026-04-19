@@ -8,6 +8,13 @@ services:
     env_file:
       - path: .env
         required: false
+    environment:
+      - PIN_HASH
+      - SECRET_KEY
+      - TZ
+      - TEMPLATE_PATH
+      - DATABASE_URL
+      - EXPORT_DIR
     ports:
       - "8888:8000"
     volumes:
