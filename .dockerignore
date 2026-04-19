@@ -7,7 +7,7 @@ __pycache__
 *.egg-info
 tests
 docs
-data
+# data
 README.md
 .env
 .env.*

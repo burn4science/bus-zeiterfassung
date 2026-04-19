@@ -24,6 +24,7 @@ RUN apt-get update && \
 WORKDIR /app
 COPY --from=builder /app/.venv /app/.venv
 COPY src /app/src
+COPY data/Dienstzeitblatt_template.xlsx /app/data/Dienstzeitblatt_template.xlsx
 ENV PATH="/app/.venv/bin:$PATH" \
     PYTHONPATH="/app/src" \
     PYTHONUNBUFFERED=1
