@@ -49,5 +49,5 @@ def export_pdf(
     return FileResponse(
         pdf_path,
         media_type="application/pdf",
-        filename=f"Dienstzeitblatt-{year}-{month:02d}.pdf",
+        filename=pdf_path.name,
     )

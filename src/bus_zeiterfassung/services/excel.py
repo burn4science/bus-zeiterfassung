@@ -111,6 +111,7 @@ def fill_template(entries: Sequence[TimeEntry], year: int, month: int) -> Path:
     # ws.page_setup.fitToHeight = 1
 
     settings.export_dir.mkdir(parents=True, exist_ok=True)
-    out_path = settings.export_dir / f"{year}-{month:02d}.xlsx"
+    stem = f"Dienstzeitblatt {settings.employee_name} {GERMAN_MONTHS[month]}"
+    out_path = settings.export_dir / f"{stem}.xlsx"
     wb.save(out_path)
     return out_path
