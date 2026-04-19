@@ -23,10 +23,12 @@ RUN apt-get update && \
 
 WORKDIR /app
 COPY --from=builder /app/.venv /app/.venv
+# Copy the template folder into the image
+COPY assets /app/assets
 COPY src /app/src
 ENV PATH="/app/.venv/bin:$PATH" \
     PYTHONPATH="/app/src" \
     PYTHONUNBUFFERED=1
 
-EXPOSE 8000
-CMD ["uvicorn", "bus_zeiterfassung.main:app", "--host", "0.0.0.0", "--port", "8000"]
+EXPOSE 8888
+CMD ["uvicorn", "bus_zeiterfassung.main:app", "--host", "0.0.0.0", "--port", "8888"]

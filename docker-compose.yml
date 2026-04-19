@@ -16,6 +16,9 @@ services:
       - DATABASE_URL
       - EXPORT_DIR
     ports:
-      - "8888:8000"
+      - "8888:8888"
     volumes:
-      - ./data:/app/data
+      - bus_app_data:/app/data
+
+volumes:
+  bus_app_data:
