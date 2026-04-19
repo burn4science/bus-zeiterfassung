@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     pin_hash: str = Field(..., description="argon2 hash of the login PIN")
     secret_key: str = Field(default="", description="session cookie signing key")
     tz: str = "Europe/Berlin"
-    template_path: Path = Path(BASE_DIR, "data/Dienstzeitblatt_template.xlsx")
+    template_path: Path = Path(BASE_DIR, "assets/Dienstzeitblatt_template.xlsx")
     database_url: str = "sqlite:///data/db.sqlite3"
     export_dir: Path = Path("data/exports")
 
