@@ -1,5 +1,10 @@
+import logging
+import ssl
+import tempfile
+import urllib.request
 from collections import defaultdict
-from collections.abc import Sequence
+from collections.abc import Generator, Sequence
+from contextlib import contextmanager
 from datetime import date as _date
 from datetime import datetime as _dt
 from datetime import time as _time
@@ -13,6 +18,8 @@ from openpyxl.worksheet.worksheet import Worksheet
 
 from bus_zeiterfassung.config import settings
 from bus_zeiterfassung.models import TimeEntry
+
+logger = logging.getLogger(__name__)
 
 GERMAN_MONTHS = {
     1: "Januar",
@@ -40,6 +47,33 @@ def _apply_table_borders(ws: Worksheet) -> None:
     for row in ws.iter_rows(min_row=5, max_row=37, min_col=1, max_col=11):
         for cell in row:
             cell.border = _GRID
+
+
+def _fetch_signature_to_tempfile(url: str) -> Path:
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+    with urllib.request.urlopen(url, context=ctx) as resp:
+        tmp = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
+        tmp.write(resp.read())
+        tmp.close()
+        return Path(tmp.name)
+
+
+@contextmanager
+def _signature_image() -> Generator[Path | None, None, None]:
+    if settings.signature_path and settings.signature_path.exists():
+        logger.info("signature: using local file %s", settings.signature_path)
+        yield settings.signature_path
+    elif settings.signature_url:
+        logger.info("signature: fetching from %s", settings.signature_url)
+        tmp = _fetch_signature_to_tempfile(settings.signature_url)
+        try:
+            yield tmp
+        finally:
+            tmp.unlink(missing_ok=True)
+    else:
+        yield None
 
 
 def _insert_signature(ws: Worksheet, path: Path, anchor: str) -> None:
@@ -121,11 +155,13 @@ def fill_template(entries: Sequence[TimeEntry], year: int, month: int) -> Path:
     # ws.page_setup.fitToWidth = 1
     # ws.page_setup.fitToHeight = 1
 
-    if settings.signature_path and settings.signature_path.exists():
-        _insert_signature(ws, settings.signature_path, anchor="J43")
-
     settings.export_dir.mkdir(parents=True, exist_ok=True)
     stem = f"Dienstzeitblatt {settings.employee_name} {GERMAN_MONTHS[month]}"
     out_path = settings.export_dir / f"{stem}.xlsx"
-    wb.save(out_path)
+
+    with _signature_image() as sig:
+        if sig:
+            _insert_signature(ws, sig, anchor="J43")
+        wb.save(out_path)
+
     return out_path

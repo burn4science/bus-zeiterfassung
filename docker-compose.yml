@@ -16,6 +16,8 @@ services:
       - TEMPLATE_PATH
       - DATABASE_URL
       - EXPORT_DIR
+      - SIGNATURE_PATH
+      - SIGNATURE_URL
     ports:
       - "8888:8888"
     volumes:

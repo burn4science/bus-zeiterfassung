@@ -1,3 +1,4 @@
+import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -11,6 +12,8 @@ from bus_zeiterfassung.auth import NotAuthenticated
 from bus_zeiterfassung.config import settings
 from bus_zeiterfassung.db import init_db
 from bus_zeiterfassung.routes import entries, export, pages
+
+logging.basicConfig(level=logging.INFO)
 
 _HERE = Path(__file__).parent
 
