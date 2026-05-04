@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     tz: str = "Europe/Berlin"
     employee_name: str = Field(default="", description="full name written to exported Dienstzeitblatt")
     template_path: Path = Path(BASE_DIR, "assets/Dienstzeitblatt_template.xlsx")
+    signature_path: Path | None = None
     database_url: str = "sqlite:///data/db.sqlite3"
     export_dir: Path = Path("data/exports")
 

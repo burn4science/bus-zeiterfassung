@@ -210,4 +210,6 @@ __marimo__/
 /data/*
 !/data/.gitkeep
 !/assets/Dienstzeitblatt_template.xlsx
+/assets/*.png
+!/assets/signature-dummy.png
 

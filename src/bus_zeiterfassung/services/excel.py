@@ -6,8 +6,10 @@ from datetime import time as _time
 from pathlib import Path
 
 from openpyxl import load_workbook
+from openpyxl.drawing.image import Image as XlImage
 from openpyxl.styles import Border, Font, Side
 from openpyxl.worksheet.properties import PageSetupProperties
+from openpyxl.worksheet.worksheet import Worksheet
 
 from bus_zeiterfassung.config import settings
 from bus_zeiterfassung.models import TimeEntry
@@ -31,12 +33,21 @@ SESSION_COLS = (("B", "C"), ("D", "E"), ("F", "G"), ("H", "I"))
 
 _THIN = Side(style="thin")
 _GRID = Border(left=_THIN, right=_THIN, top=_THIN, bottom=_THIN)
+_SIGNATURE_HEIGHT_PX = 31
 
 
-def _apply_table_borders(ws) -> None:
+def _apply_table_borders(ws: Worksheet) -> None:
     for row in ws.iter_rows(min_row=5, max_row=37, min_col=1, max_col=11):
         for cell in row:
             cell.border = _GRID
+
+
+def _insert_signature(ws: Worksheet, path: Path, anchor: str) -> None:
+    img = XlImage(str(path))
+    img.width = round(img.width * _SIGNATURE_HEIGHT_PX / img.height)
+    img.height = _SIGNATURE_HEIGHT_PX
+    img.anchor = anchor
+    ws.add_image(img)
 
 
 def fill_template(entries: Sequence[TimeEntry], year: int, month: int) -> Path:
@@ -109,6 +120,9 @@ def fill_template(entries: Sequence[TimeEntry], year: int, month: int) -> Path:
     ws.page_setup.orientation = "portrait"
     # ws.page_setup.fitToWidth = 1
     # ws.page_setup.fitToHeight = 1
+
+    if settings.signature_path and settings.signature_path.exists():
+        _insert_signature(ws, settings.signature_path, anchor="J43")
 
     settings.export_dir.mkdir(parents=True, exist_ok=True)
     stem = f"Dienstzeitblatt {settings.employee_name} {GERMAN_MONTHS[month]}"
