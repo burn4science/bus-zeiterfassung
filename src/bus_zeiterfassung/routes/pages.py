@@ -1,16 +1,14 @@
 from datetime import date, timedelta
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Form, Query, Request
+from fastapi import APIRouter, Depends, Form, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
-from sqlmodel import Session, select
 
 from bus_zeiterfassung.auth import SESSION_KEY, require_login, verify_pin
-from bus_zeiterfassung.db import get_session
-from bus_zeiterfassung.models import TimeEntry
-from bus_zeiterfassung.routes.entries import _next_nav_day
+from bus_zeiterfassung.db import get_store
+from bus_zeiterfassung.store import TimeEntryStore
 from bus_zeiterfassung.templating import templates
-from bus_zeiterfassung.timeutil import today_local
+from bus_zeiterfassung.timeutil import parse_month_key, today_local
 
 router = APIRouter()
 
@@ -42,15 +40,14 @@ def logout(request: Request) -> RedirectResponse:
 @router.get("/", response_class=HTMLResponse, dependencies=[Depends(require_login)])
 def today_page(
     request: Request,
-    session: Annotated[Session, Depends(get_session)],
+    store: Annotated[TimeEntryStore, Depends(get_store)],
     day_str: Annotated[str | None, Query(alias="d")] = None,
 ) -> HTMLResponse:
     today = today_local()
     selected_day = date.fromisoformat(day_str) if day_str else today
-    stmt = select(TimeEntry).where(TimeEntry.day == selected_day).order_by(TimeEntry.start)  # type: ignore[arg-type]
-    entries = list(session.exec(stmt))
+    entries = store.get_by_day(selected_day)
     open_entry = next((e for e in entries if e.start is not None and e.end is None), None)
-    next_day, has_next = _next_nav_day(session, selected_day, today)
+    next_day, has_next = store.next_nav_day(selected_day, today)
     return templates.TemplateResponse(
         request,
         "today.html",
@@ -70,23 +67,19 @@ def today_page(
 @router.get("/month", response_class=HTMLResponse, dependencies=[Depends(require_login)])
 def month_page(
     request: Request,
-    session: Annotated[Session, Depends(get_session)],
+    store: Annotated[TimeEntryStore, Depends(get_store)],
     month_str: Annotated[str | None, Query(alias="m")] = None,
 ) -> HTMLResponse:
     today = today_local()
     if month_str:
-        year, month = (int(part) for part in month_str.split("-", 1))
+        try:
+            year, month = parse_month_key(month_str)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Monat erwartet Format YYYY-MM")
     else:
         year, month = today.year, today.month
 
-    start = date(year, month, 1)
-    end = date(year + (month == 12), (month % 12) + 1, 1)
-    stmt = (
-        select(TimeEntry)
-        .where(TimeEntry.day >= start, TimeEntry.day < end)
-        .order_by(TimeEntry.day, TimeEntry.start)  # type: ignore[arg-type]
-    )
-    entries = list(session.exec(stmt))
+    entries = store.get_by_month(year, month)
     prev_month, prev_year = (12, year - 1) if month == 1 else (month - 1, year)
     next_month, next_year = (1, year + 1) if month == 12 else (month + 1, year)
     return templates.TemplateResponse(

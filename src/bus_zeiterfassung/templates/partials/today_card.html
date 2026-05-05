@@ -44,8 +44,7 @@
         </div>
         <div x-data="{ elapsed: '' }"
              x-init="setInterval(() => {
-                 const diff = Math.floor((Date.now() - new Date('{{ open_entry.start.isoformat() }}'
-                     .replace('T', 'T').replace(/(\d{2}:\d{2}:\d{2})$/, '$1'))) / 1000);
+                 const diff = Math.floor((Date.now() - new Date('{{ open_entry.day.isoformat() }}T{{ open_entry.start.isoformat() }}')) / 1000);
                  const hours = Math.floor(diff / 3600).toString().padStart(2, '0');
                  const minutes = Math.floor((diff % 3600) / 60).toString().padStart(2, '0');
                  const seconds = (diff % 60).toString().padStart(2, '0');

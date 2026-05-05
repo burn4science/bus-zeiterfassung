@@ -1,7 +1,7 @@
 import sys
 
 from argon2 import PasswordHasher
-from argon2.exceptions import VerifyMismatchError
+from argon2.exceptions import VerificationError
 from fastapi import Request
 
 from bus_zeiterfassung.config import settings
@@ -17,7 +17,7 @@ class NotAuthenticated(Exception):
 def verify_pin(pin: str) -> bool:
     try:
         _ph.verify(settings.pin_hash, pin)
-    except VerifyMismatchError:
+    except VerificationError:
         return False
     return True
 
