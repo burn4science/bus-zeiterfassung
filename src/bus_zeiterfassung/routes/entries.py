@@ -71,13 +71,12 @@ def create_entry(
     day: Annotated[date, Form()],
     start: Annotated[time, Form()],
     end: Annotated[time | None, Form()] = None,
-    note: Annotated[str | None, Form()] = None,
 ) -> HTMLResponse:
     try:
         validate_time_range(start, end)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
-    store.save(TimeEntry(day=day, start=start, end=end, note=note))
+    store.save(TimeEntry(day=day, start=start, end=end))
     return _render_today_card(
         request, store, selected_day=day,
         flash=f"Eintrag für {day.strftime('%d.%m.%Y')} gespeichert",
@@ -92,7 +91,6 @@ def update_entry(
     day: Annotated[date, Form()],
     start: Annotated[time, Form()],
     end: Annotated[time | None, Form()] = None,
-    note: Annotated[str | None, Form()] = None,
     view: Annotated[str | None, Form()] = None,
     selected_day_str: Annotated[str | None, Form(alias="selected_day")] = None,
 ) -> HTMLResponse:
@@ -104,7 +102,6 @@ def update_entry(
     entry.day = day
     entry.start = start
     entry.end = end
-    entry.note = note
     store.save(entry)
     if view == "today":
         viewing_day = date.fromisoformat(selected_day_str) if selected_day_str else None

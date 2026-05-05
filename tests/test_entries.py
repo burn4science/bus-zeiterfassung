@@ -55,13 +55,13 @@ def test_update_and_delete(client: TestClient) -> None:
 
     resp = client.post(
         f"/entries/{entry_id}/update",
-        data={"day": "2026-04-10", "start": "09:00", "end": "13:00", "note": "changed"},
+        data={"day": "2026-04-10", "start": "09:00", "end": "13:00"},
     )
     assert resp.status_code == 200
 
     with Session(client.test_engine) as s:  # type: ignore[attr-defined]
         updated = s.exec(select(TimeEntry)).one()
-    assert updated.note == "changed"
+    assert updated.start is not None
 
     resp = client.post(f"/entries/{entry_id}/delete")
     assert resp.status_code == 200

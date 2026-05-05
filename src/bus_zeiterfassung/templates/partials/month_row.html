@@ -2,7 +2,6 @@
     <td x-show="!edit" class="px-3 py-2.5 text-sm font-medium text-slate-700 whitespace-nowrap">{{ e.day.strftime('%d.%m.') }}</td>
     <td x-show="!edit" class="px-3 py-2.5 text-sm font-mono tabular-nums text-slate-600">{{ e.start.strftime('%H:%M') if e.start else '–' }}</td>
     <td x-show="!edit" class="px-3 py-2.5 text-sm font-mono tabular-nums text-slate-600">{{ e.end.strftime('%H:%M') if e.end else '…' }}</td>
-    <td x-show="!edit" class="px-3 py-2.5 text-xs text-slate-400">{{ e.note or '' }}</td>
     <td x-show="!edit" class="px-3 py-2.5">
         <div class="flex gap-1.5 justify-end items-center">
             <button @click="edit = true"
@@ -23,19 +22,17 @@
             </button>
         </div>
     </td>
-    <td x-show="edit" colspan="5" class="px-3 py-2">
+    <td x-show="edit" colspan="4" class="px-3 py-2">
         <form hx-post="/entries/{{ e.id }}/update"
               hx-target="#row-{{ e.id }}" hx-swap="outerHTML"
-              class="grid grid-cols-[auto_auto_auto_1fr] gap-x-2 gap-y-2 text-sm items-center">
+              class="grid grid-cols-[auto_auto_auto] gap-x-2 gap-y-2 text-sm items-center">
             <input type="date" name="day" value="{{ e.day.isoformat() }}" required
                    class="border border-slate-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500">
             <input type="time" name="start" value="{{ e.start.strftime('%H:%M') if e.start else '' }}" required
                    class="border border-slate-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500">
             <input type="time" name="end" value="{{ e.end.strftime('%H:%M') if e.end else '' }}"
                    class="border border-slate-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <input type="text" name="note" value="{{ e.note or '' }}" placeholder="Notiz"
-                   class="border border-slate-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-0">
-            <div class="col-span-4 flex gap-1 justify-end">
+            <div class="col-span-3 flex gap-1 justify-end">
                 <button class="text-xs px-3 py-1.5 rounded-lg bg-blue-700 text-white hover:bg-blue-600 font-medium">Speichern</button>
                 <button type="button" @click="edit = false"
                         class="text-xs px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 font-medium">Abbrechen</button>

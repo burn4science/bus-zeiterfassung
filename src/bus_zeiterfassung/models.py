@@ -8,5 +8,4 @@ class TimeEntry(SQLModel, table=True):
     day: date = Field(index=True)
     start: time | None = None
     end: time | None = None
-    note: str | None = None
     created_at: datetime = Field(default_factory=datetime.now)
