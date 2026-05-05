@@ -1,7 +1,5 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## Docker Workflow
 
 Development and testing happen inside Docker.
@@ -35,8 +33,8 @@ docker compose run --rm app python -m bus_zeiterfassung.auth hash <pin>
 | Module | Role |
 |---|---|
 | `main.py` | FastAPI app init, middleware, router mounting |
-| `config.py` | Pydantic-settings from `.env` (PIN_HASH, SECRET_KEY, TZ, TEMPLATE_PATH, DATABASE_URL, EXPORT_DIR) |
-| `models.py` | `TimeEntry` SQLModel table (day, start, end, note) |
+| `config.py` | Pydantic-settings from `.env` (PIN_HASH, SECRET_KEY, TZ, EMPLOYEE_NAME, TEMPLATE_PATH, SIGNATURE_PATH, SIGNATURE_URL, DATABASE_URL, EXPORT_DIR) |
+| `models.py` | `TimeEntry` SQLModel table (day, start, end) |
 | `db.py` | Async SQLite engine, session dependency |
 | `auth.py` | Argon2 PIN verify, session cookie, `require_login` FastAPI dependency |
 | `timeutil.py` | Timezone-aware datetime helpers (default: Europe/Berlin) |
@@ -44,7 +42,7 @@ docker compose run --rm app python -m bus_zeiterfassung.auth hash <pin>
 | `routes/pages.py` | `GET /`, `/month`, `/login` + `POST /login` |
 | `routes/entries.py` | `POST /start`, `/stop`, `/entries` CRUD + shared helpers |
 | `routes/export.py` | `POST /export/{month_key}` → xlsx + pdf |
-| `services/excel.py` | `fill_template(entries, year, month)` — fills xlsx template cells |
+| `services/excel.py` | `fill_template(entries, year, month)` — loads template, writes header/sessions/totals, applies formatting, optionally embeds signature, saves to EXPORT_DIR |
 | `services/pdf.py` | `xlsx_to_pdf(path)` — shells out to `soffice` |
 
 **Core data flow**: User clocks in (`/start` → open `TimeEntry`), clocks out (`/stop` → sets `end`). At month end, `/export/{YYYY-MM}` groups entries by day (max 4 sessions/day), fills the Excel template (see `docs/template-mapping.md` for exact cell layout), and converts to PDF.
@@ -67,4 +65,16 @@ docker compose run --rm app python -m bus_zeiterfassung.auth hash <pin>
 
 ## Environment
 
-Copy `.env.example` to `.env`. Required: `PIN_HASH`, `SECRET_KEY` (≥32 chars). The Excel template (`assets/Dienstzeitblatt_template.xlsx`) is not in the repo and must be provided separately — it is volume-mounted at `/app/data`.
+Copy `.env.example` to `.env`. Required vars: `PIN_HASH` (argon2 hash), `SECRET_KEY` (≥32 chars). All other vars have defaults.
+
+| Variable | Default | Notes |
+|---|---|---|
+| `PIN_HASH` | — | Required. Generate with `python -m bus_zeiterfassung.auth hash <pin>` |
+| `SECRET_KEY` | — | Required. ≥32 chars. Generate with `secrets.token_urlsafe(32)` |
+| `TZ` | `Europe/Berlin` | Timezone for clock-in/out timestamps |
+| `EMPLOYEE_NAME` | `""` | Written to the exported Dienstzeitblatt |
+| `TEMPLATE_PATH` | `assets/Dienstzeitblatt_template.xlsx` | Not in repo; volume-mount at `/app/data` in Docker |
+| `SIGNATURE_PATH` | unset | Local PNG; takes priority over `SIGNATURE_URL` |
+| `SIGNATURE_URL` | unset | Remote PNG (e.g. Nextcloud public share `…/download`); SSL verification is skipped |
+| `DATABASE_URL` | `sqlite:///data/db.sqlite3` | |
+| `EXPORT_DIR` | `data/exports` | Destination for generated `.xlsx` and `.pdf` files |

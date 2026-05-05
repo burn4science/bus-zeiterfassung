@@ -23,6 +23,22 @@ docker compose down            # Stoppen
 Die Vorlage muss unter `assets/Dienstzeitblatt_template.xlsx` liegen.
 Zellen-Mapping: siehe [docs/template-mapping.md](docs/template-mapping.md).
 
+## Konfiguration (`.env`)
+
+| Variable | Standard | Beschreibung |
+|---|---|---|
+| `PIN_HASH` | — | **Pflicht.** Argon2-Hash des Login-PINs |
+| `SECRET_KEY` | — | **Pflicht.** ≥ 32 Zeichen, für Session-Cookies |
+| `TZ` | `Europe/Berlin` | Zeitzone für Stempelzeiten |
+| `EMPLOYEE_NAME` | `""` | Name, der im Dienstzeitblatt erscheint |
+| `TEMPLATE_PATH` | `assets/Dienstzeitblatt_template.xlsx` | Pfad zur Excel-Vorlage |
+| `SIGNATURE_PATH` | — | Lokale PNG-Datei für Unterschrift im Export |
+| `SIGNATURE_URL` | — | Remote-PNG (z. B. Nextcloud-Freigabelink `…/download`) |
+| `DATABASE_URL` | `sqlite:///data/db.sqlite3` | SQLite-Datenbankpfad |
+| `EXPORT_DIR` | `data/exports` | Zielverzeichnis für `.xlsx`- und `.pdf`-Exporte |
+
+`SIGNATURE_PATH` hat Vorrang vor `SIGNATURE_URL`. Ist beides nicht gesetzt, wird keine Unterschrift eingefügt.
+
 ## Tests
 
 Tests laufen im Container (mit Dev-Dependencies):
